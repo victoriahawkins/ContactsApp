@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">ContactsApp</string>
+
+
+    <!-- add contact activity -->
+    <string name="name_input">Name</string>
+    <string name="phone_input">Phone</string>
+    <string name="email_input">Email address</string>
+    <string name="address_input">Home address</string>
+    <string name="save_button">Save</string>
+    <string name="delete_button">Delete</string>
+
+    <string name="title_activity_edit_contact">Edit or Delete Contact</string>
+    <string name="nickname_input">Nickname</string>
+    <string name="contactpictureContentDescription">contactPicture</string>
+    <string name="addcontactpicturebuttonContentDescription">addContactPictureButton</string>
+    <string name="emailaddressinput">emailAddressInput</string>
+    <string name="inputnamecontentdescription">inputName</string>
+    <string name="search_input_hint">Search...</string>
+    <string name="add_contact_button_contact_desc">add contact</string>
+    <string name="yes">DELETE</string>
+    <string name="cancel">CANCEL</string>
+</resources>
