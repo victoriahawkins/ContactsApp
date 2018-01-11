@@ -2,13 +2,13 @@ package org.boxtree.vic.contactsapp;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.SearchView;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.SearchView;
 
 import org.boxtree.vic.contactsapp.vo.Contact;
 
@@ -20,7 +20,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private SearchView mSearchView;
 
 
-    ArrayList<Contact> contactArrayList = new ArrayList<Contact>();
+    ArrayList<Contact> contactArrayList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,7 +80,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             // refresh contact list
             ContactFragment contactFrag = (ContactFragment) getSupportFragmentManager().findFragmentById(R.id.contactFragment);
-            contactFrag.refreshRequsted();
+            contactFrag.refreshRequested();
 
             Log.d ("MainActivity", "Contact refresh requested for add/edit/delete");
 

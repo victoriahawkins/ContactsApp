@@ -5,12 +5,16 @@ import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -25,6 +29,8 @@ import org.boxtree.vic.contactsapp.vo.Contact;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+
+import static android.Manifest.permission.CALL_PHONE;
 
 public class EditContactActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -169,7 +175,7 @@ public class EditContactActivity extends AppCompatActivity implements View.OnCli
         ContentResolver contentResolver = getContentResolver();
 
 
-        ArrayList<ContentProviderOperation> ops = new ArrayList<android.content.ContentProviderOperation>();
+        ArrayList<ContentProviderOperation> ops = new ArrayList<>();
 
 
         try {
@@ -264,15 +270,79 @@ public class EditContactActivity extends AppCompatActivity implements View.OnCli
         return !originalValue.equals(mView.getText().toString());
     }
 
+
+    private static final int MY_PERMISSIONS_REQUEST_CALL_PHONE = 0;
+
     // one touch calling
     private void callContact() {
 //        Snackbar.make(v, "Replace with your own action", Snackbar.LENGTH_LONG)
 //                .setAction("Action", null).show();
 
+        if (ContextCompat.checkSelfPermission(this,
+                CALL_PHONE)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    CALL_PHONE)) {
+
+                // Show an explanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+
+                // not used
+                Snackbar.make(getCurrentFocus(), R.string.permission_rationale_call, Snackbar.LENGTH_INDEFINITE)
+                        .setAction(android.R.string.ok, new View.OnClickListener() {
+                            @Override
+//                        @TargetApi(Build.VERSION_CODES.M)
+                            public void onClick(View v) {
+                                requestPermissions(new String[]{CALL_PHONE}, MY_PERMISSIONS_REQUEST_CALL_PHONE);
+                            }
+                        });
+
+
+            } else {
+
+                // No explanation needed, we can request the permission.
+
+                ActivityCompat.requestPermissions(this,
+                        new String[]{CALL_PHONE},
+                        MY_PERMISSIONS_REQUEST_CALL_PHONE);
+
+                return;
+
+                // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
+                // app-defined int constant. The callback method gets the
+                // result of the request.
+            }
+        }
+
         Intent intent = new Intent(Intent.ACTION_CALL);
         intent.setData(Uri.parse("tel:" + getContact().getPhone()));
         if (intent.resolveActivity(getPackageManager()) != null) {
             startActivity(intent);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_CALL_PHONE: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // permission was granted, yay! Do the
+                    // contacts-related task you need to do.
+
+                    callContact();
+
+                }
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request
         }
     }
 

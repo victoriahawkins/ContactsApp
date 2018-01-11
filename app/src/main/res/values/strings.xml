@@ -20,4 +20,6 @@
     <string name="add_contact_button_contact_desc">add contact</string>
     <string name="yes">DELETE</string>
     <string name="cancel">CANCEL</string>
+    <string name="permission_rationale">Allow ContactsApp to access your contacts?</string>
+    <string name="permission_rationale_call">Please allow permission to call for ContactsApp.</string>
 </resources>

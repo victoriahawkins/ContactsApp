@@ -2,10 +2,14 @@ package org.boxtree.vic.contactsapp;
 
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -13,12 +17,15 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
+import android.widget.Toast;
 
 import org.boxtree.vic.contactsapp.vo.Contact;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static android.Manifest.permission.READ_CONTACTS;
+
 
 /**
  * A fragment representing a list of Items.
@@ -67,13 +74,25 @@ public class ContactFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_contact_list, container, false);
 
+
         // Set the adapter
         if (view instanceof RecyclerView) {
             Context context = view.getContext();
             RecyclerView recyclerView = (RecyclerView) view;
 
+
+            List<Contact> contacts = new ArrayList<>();
+            if (hasPermissionToAccessContacts(view)) {
+
+                contacts = getContacts();
+
+            } else {
+
+                Toast.makeText(getActivity(), "Permissions for reading native contacts should be granted. Showing empty contacts. Please enable read and write permissions for this application.", Toast.LENGTH_SHORT).show();
+            }
+
             // set adapter first and layout manager next, otherwise view can not be clicked
-            recyclerView.setAdapter(new MyContactRecyclerViewAdapter(getContacts(), mListener));
+            recyclerView.setAdapter(new MyContactRecyclerViewAdapter(contacts, mListener));
 
             if (mColumnCount <= 1) {
                 recyclerView.setLayoutManager(new LinearLayoutManager(context));
@@ -124,7 +143,9 @@ public class ContactFragment extends Fragment {
 
     private List<Contact> getContacts() {
 
-        List<Contact> contacts = new ArrayList<Contact>();
+
+        List<Contact> contacts = new ArrayList<>();
+
 
         ContentResolver contentResolver = getActivity().getContentResolver();
         String[] projectionFields = new String[]{ContactsContract.Contacts._ID, ContactsContract.Contacts.DISPLAY_NAME,
@@ -221,6 +242,69 @@ public class ContactFragment extends Fragment {
     }
 
 
+    private static final int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 0;
+
+    private boolean hasPermissionToAccessContacts(View view) {
+
+        if (ContextCompat.checkSelfPermission(getActivity(), READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
+            return true;
+        }
+
+
+        // Should we show an explanation?
+        if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
+                READ_CONTACTS)) {
+
+            // Show an explanation to the user *asynchronously* -- don't block
+            // this thread waiting for the user's response! After the user
+            // sees the explanation, try again to request the permission.
+
+            Snackbar.make(view, R.string.permission_rationale, Snackbar.LENGTH_INDEFINITE)
+                    .setAction(android.R.string.ok, new View.OnClickListener() {
+                        @Override
+//                        @TargetApi(Build.VERSION_CODES.M)
+                        public void onClick(View v) {
+                            requestPermissions(new String[]{READ_CONTACTS}, MY_PERMISSIONS_REQUEST_READ_CONTACTS);
+                        }
+                    });
+
+        } else {
+
+            // No explanation needed, we can request the permission.
+
+            ActivityCompat.requestPermissions(getActivity(),
+                    new String[]{READ_CONTACTS},
+                    MY_PERMISSIONS_REQUEST_READ_CONTACTS);
+
+            // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
+            // app-defined int constant. The callback method gets the
+            // result of the request.
+        }
+
+        return false;
+
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_READ_CONTACTS: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // permission was granted, yay! Do the
+                    // contacts-related task you need to do.
+
+                    refreshRequested();
+
+                }
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request
+        }
+    }
 
 
     /* SearchView on Main Activity calls this */
@@ -238,7 +322,7 @@ public class ContactFragment extends Fragment {
 
 
     /* Save button on AddContact calls this */
-    public void refreshRequsted() {
+    public void refreshRequested() {
 
 
         Log.d ("ContactFrag", "New refresh request sent after contact added -- ");

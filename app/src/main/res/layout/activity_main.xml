@@ -53,12 +53,12 @@
         app:layout_constraintTop_toBottomOf="@+id/searchView" />
 
 
-    <android.support.v7.widget.SearchView
+    <SearchView
         android:id="@+id/searchView"
         android:layout_width="356dp"
         android:layout_height="36dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="7dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="7dp"
         android:layout_marginTop="16dp"
         app:layout_constraintHorizontal_bias="0.117"
         app:layout_constraintLeft_toLeftOf="parent"
