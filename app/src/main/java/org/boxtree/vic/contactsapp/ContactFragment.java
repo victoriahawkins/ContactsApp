@@ -1,12 +1,12 @@
 package org.boxtree.vic.contactsapp;
 
+import android.Manifest;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.provider.ContactsContract;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static android.Manifest.permission.READ_CONTACTS;
+import static org.boxtree.vic.contactsapp.MainActivity.MY_PERMISSIONS_REQUEST_READ_CONTACTS;
 
 
 /**
@@ -82,6 +83,7 @@ public class ContactFragment extends Fragment {
 
 
             List<Contact> contacts = new ArrayList<>();
+            Log.d("ContactFrag", "Determine if there is permission to read contacts on create view");
             if (hasPermissionToAccessContacts(view)) {
 
                 contacts = getContacts();
@@ -121,8 +123,6 @@ public class ContactFragment extends Fragment {
         super.onDetach();
         mListener = null;
     }
-
-
 
 
     /**
@@ -167,14 +167,14 @@ public class ContactFragment extends Fragment {
                         String id = cursor.getString(0);
                         String name = cursor.getString(1);
                         String lookupKey = cursor.getString(2);
-                        Contact contact = new Contact(id, name,  null, null, null, null, lookupKey);
+                        Contact contact = new Contact(id, name, null, null, null, null, lookupKey);
 
                         Log.d("ContentFragmentDebug", "Name - id - lookup: " + name + " - " + id + " - " + " - " + lookupKey);
 
 
                         // email
 //                        String[] emailFields = new String[]{ContactsContract.Data._ID, ContactsContract.CommonDataKinds.Phone.NUMBER, ContactsContract.CommonDataKinds.Phone.TYPE, ContactsContract.CommonDataKinds.Phone.LABEL};
-                        Cursor emails = contentResolver.query(ContactsContract.CommonDataKinds.Email.CONTENT_URI, null,ContactsContract.CommonDataKinds.Email.CONTACT_ID + "=" + id, null, null);
+                        Cursor emails = contentResolver.query(ContactsContract.CommonDataKinds.Email.CONTENT_URI, null, ContactsContract.CommonDataKinds.Email.CONTACT_ID + "=" + id, null, null);
                         if (emails.getCount() > 0) {
                             emails.moveToNext(); // just get first one
                             String emailAddress = emails.getString(emails.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA));
@@ -188,7 +188,7 @@ public class ContactFragment extends Fragment {
                         if (nickCur.getCount() > 0) {
                             while (nickCur.moveToNext()) {
                                 String genericField = nickCur.getString(nickCur.getColumnIndex(ContactsContract.CommonDataKinds.Nickname.NAME));
-                                String mimetype = nickCur.getString(nickCur.getColumnIndex(ContactsContract.Data.MIMETYPE)) ;//
+                                String mimetype = nickCur.getString(nickCur.getColumnIndex(ContactsContract.Data.MIMETYPE));//
                                 Log.d("ContentFragmentDebug", "Nickname is " + genericField + " and mimetype is " + mimetype);
 
 
@@ -242,77 +242,32 @@ public class ContactFragment extends Fragment {
     }
 
 
-    private static final int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 0;
-
     private boolean hasPermissionToAccessContacts(View view) {
 
-        if (ContextCompat.checkSelfPermission(getActivity(), READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
+
+        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
+
+            Log.d("ContactFrag", "Permission to read contacts was already granted, returning");
             return true;
         }
 
+        Log.d("ContactFrag", "Requesting permissions for app");
 
-        // Should we show an explanation?
-        if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
-                READ_CONTACTS)) {
-
-            // Show an explanation to the user *asynchronously* -- don't block
-            // this thread waiting for the user's response! After the user
-            // sees the explanation, try again to request the permission.
-
-            Snackbar.make(view, R.string.permission_rationale, Snackbar.LENGTH_INDEFINITE)
-                    .setAction(android.R.string.ok, new View.OnClickListener() {
-                        @Override
-//                        @TargetApi(Build.VERSION_CODES.M)
-                        public void onClick(View v) {
-                            requestPermissions(new String[]{READ_CONTACTS}, MY_PERMISSIONS_REQUEST_READ_CONTACTS);
-                        }
-                    });
-
-        } else {
-
-            // No explanation needed, we can request the permission.
-
-            ActivityCompat.requestPermissions(getActivity(),
-                    new String[]{READ_CONTACTS},
-                    MY_PERMISSIONS_REQUEST_READ_CONTACTS);
-
-            // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
-            // app-defined int constant. The callback method gets the
-            // result of the request.
-        }
+        ActivityCompat.requestPermissions(getActivity(), new String[]{READ_CONTACTS}, MY_PERMISSIONS_REQUEST_READ_CONTACTS);
 
         return false;
 
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case MY_PERMISSIONS_REQUEST_READ_CONTACTS: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
-                    // permission was granted, yay! Do the
-                    // contacts-related task you need to do.
-
-                    refreshRequested();
-
-                }
-            }
-
-            // other 'case' lines to check for other
-            // permissions this app might request
-        }
-    }
 
 
     /* SearchView on Main Activity calls this */
     public void searchRequested(String newText) {
 
-        Log.d ("ContactFrag", "New Filterable sent -- " + newText);
+        Log.d("ContactFrag", "New Filterable sent -- " + newText);
 
-        RecyclerView view  = (RecyclerView) this.getView();
+        RecyclerView view = (RecyclerView) this.getView();
         MyContactRecyclerViewAdapter adapter = (MyContactRecyclerViewAdapter) view.getAdapter();
 
         adapter.filter(newText);
@@ -325,9 +280,9 @@ public class ContactFragment extends Fragment {
     public void refreshRequested() {
 
 
-        Log.d ("ContactFrag", "New refresh request sent after contact added -- ");
+        Log.d("ContactFrag", "New refresh contact list request sent -- ");
 
-        RecyclerView view  = (RecyclerView) this.getView();
+        RecyclerView view = (RecyclerView) this.getView();
         MyContactRecyclerViewAdapter adapter = (MyContactRecyclerViewAdapter) view.getAdapter();
 
         adapter.refreshContactListFromSource(getContacts());

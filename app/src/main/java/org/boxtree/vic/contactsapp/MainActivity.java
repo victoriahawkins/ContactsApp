@@ -2,6 +2,7 @@ package org.boxtree.vic.contactsapp;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -125,6 +126,39 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
 
+    }
+
+
+    public static final int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 0;
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+
+        Log.d("ContactFrag", "received permission result");
+
+
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_READ_CONTACTS: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // permission was granted, yay! Do the
+                    // contacts-related task you need to do.
+
+                    Log.d("ContactFrag", "read contacts permission is granted, refresh recycler view");
+
+//                    refreshRequested();
+
+                    // refresh contact list
+                    ContactFragment contactFrag = (ContactFragment) getSupportFragmentManager().findFragmentById(R.id.contactFragment);
+                    contactFrag.refreshRequested();
+
+                }
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request
+        }
     }
 
 
